@@ -1,11 +1,22 @@
 import json
+import uuid
 from utils import extract_text_from_pdf, split_into_sections, call_bedrock, get_pdf_paths
+from textract import extract_placement_and_goals_section
+from get_accomodations import extract_student_accommodations_from_json
 
 # TODO: 
 # 1. generate better docx/pdf output of modified lesson plan
 # 2. interactive streamlit interface to add/remove modifications (diff)
 
-def generate_lesson_modifications(sections):
+def generate_lesson_modifications(sections, accomodations_file_path):
+    with open(accomodations_file_path, "r", encoding="utf-8") as f:
+        accommodations = json.load(f)
+    
+    accommodations_text = "\n".join(
+        f"- {a['accomodations']} (Provider: {a['to_support']}, Frequency: {a['frequency']}, Duration: {a['duration']})"
+        for a in accommodations
+    )
+
     prompt = f"""
         You are an expert special education support assistant. Your task is to analyze a psychoeducational student report excerpt and identify key learning challenges, instructional needs, and recommend lesson modifications for a general education teacher.
 
@@ -23,6 +34,9 @@ def generate_lesson_modifications(sections):
 
             --- ELIGIBILITY ---
             {sections["ELIGIBILITY RECOMMENDATIONS AND CONSIDERATIONS"]}
+
+            --- EXISTING ACCOMMODATIONS ---
+            {accommodations_text}
         </report_excerpt>
 
         Before we begin the analysis, let's review the definitions of specific learning disabilities and other health impairments:
@@ -71,7 +85,7 @@ def generate_lesson_modifications(sections):
                 {{
                     "type": "specific_learning_disability" or "other_health_impairment",
                     "name": "name of the disability or impairment",
-                    "associated_needs": ["list of associated needs"],
+                    "associated_accomodations": ["list of associated accomodations from the EXISITNG ACCOMODATIONS including frequency and location"],
                     "recommended_modifications": ["list of recommended modifications"]
                 }}
             ]
@@ -101,12 +115,12 @@ def generate_modified_lesson_plan(lesson_text, student_data):
     {lesson_text}
     </original_lesson_plan>
 
-    2. Here is the structured students data. Each entry contains the type of impairment, specific name, associated instructional needs, and recommended lesson modifications. Use this JSON structure directly:
+    2. Here is the structured students data. Each entry contains the type of impairment, specific name, associated accomodations provided for the student, and recommended lesson modifications. Use this JSON structure directly:
     <student_data_json>
     {student_json_block}
     </student_data_json>
 
-    3. Create modifications for the lesson plan based on the student's needs and recommended modifications. Focus on making the lesson more inclusive and accessible while maintaining its core objectives.
+    3. Create modifications for the lesson plan based on the student's allowed accomodations and suggested modifications. Focus on making the lesson more inclusive and accessible while maintaining its core objectives.
 
     4. Your output should consist of a new section titled "Modifications for Diverse Learners"
 
@@ -172,10 +186,26 @@ def modify_lesson_plan(report_paths, lesson_plan_path, output_file="new_lesson.t
     # extract txt from student IEP reports + generate modifications
     for report_path in report_paths:
         report_text = extract_text_from_pdf(report_path)
+        with open("extracted_report.txt", "w", encoding="utf-8") as f:
+            f.write(report_text)
         print("Extracted text from student report...")
         sections = split_into_sections(report_text, section_labels)
-        modifications = generate_lesson_modifications(sections)
+
+        # get the iep json section
+        uid = str(uuid.uuid4())[:8]
+        filtered_file = f"filtered_current_placement_{uid}.json"
+        accommodations_file = f"student_accommodations_{uid}.json"
+        extract_placement_and_goals_section(report_path, save_to_file=filtered_file)
+        extract_student_accommodations_from_json(input_json_path=filtered_file, output_json_path=accommodations_file)
+        
+        # using only IEP accommadations
+        # with open(accommodations_file, "r", encoding="utf-8") as f:
+        #     accommodations = json.load(f)
+        # student_modifications.append(accommodations)
+
+        modifications = generate_lesson_modifications(sections, accommodations_file)
         student_modifications.append(modifications)
+
     final_plan = generate_modified_lesson_plan(original_lesson_txt, student_modifications)
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(original_lesson_txt)
@@ -184,7 +214,7 @@ def modify_lesson_plan(report_paths, lesson_plan_path, output_file="new_lesson.t
     return student_modifications
 
 if __name__ == "__main__":
-    path_to_reports = get_pdf_paths("reports")
+    path_to_reports = get_pdf_paths("student_reports")
     path_to_lesson_plan= "data/Madelyn_Hunter_Calculus.pdf"
     modify_lesson_plan(path_to_reports, path_to_lesson_plan)
     print("Modified lesson plan successfully generated!")

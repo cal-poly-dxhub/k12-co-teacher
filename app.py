@@ -8,7 +8,7 @@ from weasyprint import HTML
 
 st.title("📝 Lesson Plan Modifier")
 st.markdown("""
-Upload a general education **lesson plan** and one or more **IEP student reports**.
+Upload a general education **lesson plan** and one or more **Student reports**.
 The system will modify the lesson plan to include differentiated supports for each student.
 """)
 with st.expander("📥 Upload Your Files", expanded=True):
@@ -19,7 +19,7 @@ with st.expander("📥 Upload Your Files", expanded=True):
         )
     with col2:
         student_files = st.file_uploader(
-            "Upload IEPs (1 or more) here", accept_multiple_files=True, type=["pdf"]
+            "Upload Student Report (1 or more) here", accept_multiple_files=True, type=["pdf"]
         )
 
 # create folders
@@ -56,7 +56,7 @@ if student_files and lesson_plan:
     
     # using fake student data for now
     # displaying students + corrs disabilities and modifications
-    names = ["April Chan", "May Smith"]
+    names = ["Student 1", "Student 2"]
     names_to_modifications = {}
     for i in range(len(student_modifications)):
         names_to_modifications[names[i]] = student_modifications[i]
@@ -68,6 +68,9 @@ if student_files and lesson_plan:
                     f"<h2>{disability['name'].title()}</h2><p>({disability['type'].replace('_', ' ').title()})</p>",
                     unsafe_allow_html=True
                 )
+                st.markdown("Associated Accomodations:", unsafe_allow_html=True)
+                acc_list = "".join([f"<li>{acc}</li>" for acc in disability["associated_accommodations"]])
+                st.markdown(f"<ul>{acc_list}</ul>", unsafe_allow_html=True)
                 st.markdown("Recommended Modifications:", unsafe_allow_html=True)
                 mod_list = "".join([f"<li>{mod}</li>" for mod in disability["recommended_modifications"]])
                 st.markdown(f"<ul>{mod_list}</ul>", unsafe_allow_html=True)

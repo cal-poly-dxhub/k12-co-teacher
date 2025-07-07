@@ -85,7 +85,7 @@ def generate_lesson_modifications(sections, accomodations_file_path):
                 {{
                     "type": "specific_learning_disability" or "other_health_impairment",
                     "name": "name of the disability or impairment",
-                    "associated_accomodations": ["list of associated accomodations from the EXISITNG ACCOMODATIONS including frequency and location"],
+                    "associated_accommodations": ["list of associated accomodations from the EXISITNG ACCOMODATIONS including frequency and location"],
                     "recommended_modifications": ["list of recommended modifications"]
                 }}
             ]

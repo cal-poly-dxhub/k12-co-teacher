@@ -53,90 +53,51 @@ def analyze_with_textract(pdf_path):
 
     return all_responses
 
-def get_section_top_y(blocks, section_title):
-    for block in blocks:
-        if block["BlockType"] == "LINE" and section_title.lower() in block.get("Text", "").lower():
-            return block["Geometry"]["BoundingBox"]["Top"]
-    return None
-
 def extract_tables_from_textract_blocks(blocks):
     block_map = {block["Id"]: block for block in blocks}
     tables = []
 
     for block in blocks:
-        if block["BlockType"] == "TABLE":
-            cell_blocks = []
-            for rel in block.get("Relationships", []):
+        if block["BlockType"] != "TABLE":
+            continue
+
+        cell_blocks = []
+        for rel in block.get("Relationships", []):
+            if rel["Type"] == "CHILD":
+                for cell_id in rel["Ids"]:
+                    cell = block_map.get(cell_id)
+                    if cell and cell["BlockType"] == "CELL":
+                        cell_blocks.append(cell)
+
+        if not cell_blocks:
+            continue
+
+        max_row = max(cell["RowIndex"] for cell in cell_blocks)
+        max_col = max(cell["ColumnIndex"] for cell in cell_blocks)
+        table = [["" for _ in range(max_col)] for _ in range(max_row)]
+
+        for cell in cell_blocks:
+            row_idx = cell["RowIndex"] - 1
+            col_idx = cell["ColumnIndex"] - 1
+            cell_text_parts = []
+
+            for rel in cell.get("Relationships", []):
                 if rel["Type"] == "CHILD":
-                    for cell_id in rel["Ids"]:
-                        cell = block_map[cell_id]
-                        if cell["BlockType"] == "CELL":
-                            cell_blocks.append(cell)
-
-            max_row = max(cell["RowIndex"] for cell in cell_blocks)
-            max_col = max(cell["ColumnIndex"] for cell in cell_blocks)
-            table = [["" for _ in range(max_col)] for _ in range(max_row)]
-
-            for cell in cell_blocks:
-                row_idx = cell["RowIndex"] - 1
-                col_idx = cell["ColumnIndex"] - 1
-                cell_text_parts = []
-
-                for rel in cell.get("Relationships", []):
-                    if rel["Type"] == "CHILD":
-                        for child_id in rel["Ids"]:
-                            child = block_map[child_id]
+                    for child_id in rel["Ids"]:
+                        child = block_map.get(child_id)
+                        if child:
                             if child["BlockType"] == "WORD":
                                 cell_text_parts.append(child["Text"])
                             elif child["BlockType"] == "SELECTION_ELEMENT":
                                 cell_text_parts.append(child["SelectionStatus"])
 
-                table[row_idx][col_idx] = " ".join(cell_text_parts).strip()
+            table[row_idx][col_idx] = " ".join(cell_text_parts).strip()
 
-            tables.append(table)
+        tables.append(table)
+
     return tables
 
-def extract_tables_after_section(blocks, section_title):
-    section_top_y = get_section_top_y(blocks, section_title)
-    if section_top_y is None:
-        return []
-    # filter only tables below section_top_y
-    tables_below = [
-        block for block in blocks
-        if block["BlockType"] == "TABLE" and
-        block["Geometry"]["BoundingBox"]["Top"] >= section_top_y
-    ]
-    return extract_tables_from_textract_blocks(tables_below)
-
-
-def extract_text_not_in_tables(blocks, section_top_y=None):
-    table_bboxes = [
-        block["Geometry"]["BoundingBox"]
-        for block in blocks
-        if block["BlockType"] == "TABLE"
-    ]
-    non_table_lines = []
-    for block in blocks:
-        if block["BlockType"] != "LINE":
-            continue
-
-        top = block["Geometry"]["BoundingBox"]["Top"]
-
-        if section_top_y is not None and top < section_top_y:
-            continue
-
-        overlaps_table = any(
-            top >= tb["Top"] and top <= tb["Top"] + tb["Height"]
-            for tb in table_bboxes
-        )
-
-        if not overlaps_table:
-            non_table_lines.append(block["Text"])
-
-    return non_table_lines
-
-# processing the IEP accomadations section
-
+# processing the IEP accommadations section
 def process_section_with_textract(full_pdf_path, section_title, end_marker=None, output_tmp_pdf="section_extract.pdf"):
     start_page, end_page = find_section_page_range(full_pdf_path, section_title, end_marker)
     if start_page is None:
@@ -148,43 +109,45 @@ def process_section_with_textract(full_pdf_path, section_title, end_marker=None,
     return textract_responses
 
 
-if __name__ == "__main__":
+def extract_placement_and_goals_section(
+    full_pdf_path,
+    section_title="CURRENT PLACEMENT/GOALS/SUPPLEMENTARY AIDS/RELATED SERVICES",
+    end_marker="INTERVIEWS",
+    save_to_file="filtered_current_placement_output.json"
+):
+    """
+    Extracts all TABLE blocks from a defined section of the student report using Textract.
+
+    Args:
+        full_pdf_path (str): Path to the input PDF.
+        section_title (str): Title of the section to extract from.
+        end_marker (str): Title of the section where extraction should stop.
+        save_to_file (str): Optional path to save the JSON output.
+
+    Returns:
+        list: A list of dicts with extracted "tables" per page.
+    """
     textract_data = process_section_with_textract(
-        full_pdf_path="student_reports/OHI Report.pdf",
-        section_title="CURRENT PLACEMENT/GOALS/SUPPLEMENTARY AIDS/RELATED SERVICES",
-        end_marker="INTERVIEWS"
+        full_pdf_path=full_pdf_path,
+        section_title=section_title,
+        end_marker=end_marker
     )
 
     extracted = []
-    section_found = False
 
     for i, page in enumerate(textract_data):
         blocks = page["Blocks"]
+        tables = extract_tables_from_textract_blocks(blocks)
+        if tables:
+            extracted.append({"tables": tables})
 
-        if not section_found:
-            section_top_y = get_section_top_y(blocks, "CURRENT PLACEMENT/GOALS/SUPPLEMENTARY AIDS/RELATED SERVICES")
-            if section_top_y is not None:
-                section_found = True
+    if save_to_file:
+        with open(save_to_file, "w") as f:
+            json.dump(extracted, f, indent=2)
+        print(f"saved all tables from section to {save_to_file}")
 
-                # first page only want lines below the section and not in tables
-                filtered_text = extract_text_not_in_tables(blocks, section_top_y)
-                filtered_tables = extract_tables_after_section(blocks, "CURRENT PLACEMENT/GOALS/SUPPLEMENTARY AIDS/RELATED SERVICES")
+    return extracted
 
-                extracted.append({
-                    "text": filtered_text,
-                    "tables": filtered_tables
-                })
 
-        elif section_found:
-            # all lines not in tables
-            full_text = extract_text_not_in_tables(blocks)
-            full_tables = extract_tables_from_textract_blocks(blocks)
-
-            extracted.append({
-                "text": full_text,
-                "tables": full_tables
-            })
-
-    with open("filtered_current_placement_output.json", "w") as f:
-        json.dump(extracted, f, indent=2)
-    print("saved filtered output to filtered_current_placement_output.json")
+if __name__ == "__main__":
+    extract_placement_and_goals_section("student_reports/SLD Report.pdf")

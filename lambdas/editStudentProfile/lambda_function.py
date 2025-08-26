@@ -1,9 +1,10 @@
 import json
 import boto3
+import os
 
 def lambda_handler(event, context):
     dynamo = boto3.resource('dynamodb')
-    table = dynamo.Table('k12-coteacher-student-profiles')
+    table = dynamo.Table(os.environ['STUDENT_PROFILES_TABLE'])
     studentID = event['studentID']
     teacherID = event['teacherID']
     comment = event['teacherComment']

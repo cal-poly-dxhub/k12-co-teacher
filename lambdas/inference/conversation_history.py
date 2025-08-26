@@ -1,9 +1,9 @@
-import boto3, uuid
+import boto3, uuid, os
 from datetime import datetime, timedelta
 from boto3.dynamodb.conditions import Key
 
 dynamo = boto3.resource('dynamodb')
-table = dynamo.Table('k12-coteacher-chat-history')
+table = dynamo.Table(os.environ['CHAT_HISTORY_TABLE'])
 
 # conversation history
 def create_conversation(user_id, conversation_attributes):

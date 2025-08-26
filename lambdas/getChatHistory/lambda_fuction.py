@@ -1,11 +1,12 @@
 import json
 import boto3
+import os
 from boto3.dynamodb.conditions import Key
 
 def lambda_handler(event, context):
     # config
     dynamo = boto3.resource('dynamodb')
-    table = dynamo.Table('k12-coteacher-chat-history')
+    table = dynamo.Table(os.environ['CHAT_HISTORY_TABLE'])
     teacher_id = event['teacherId']
     conversation_id = event.get('conversationId')
     class_id = event.get('classId')

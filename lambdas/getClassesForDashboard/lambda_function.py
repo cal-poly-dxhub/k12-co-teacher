@@ -1,10 +1,11 @@
 import json
 import boto3
+import os
 from botocore.exceptions import ClientError
 
 dynamodb = boto3.resource('dynamodb')
-classes_for_teacher_table = dynamodb.Table('k12-coteacher-teachers-to-classes')
-class_attributes_table = dynamodb.Table('k12-coteacher-class-attributes')
+classes_for_teacher_table = dynamodb.Table(os.environ['TEACHER_CLASSES_TABLE'])
+class_attributes_table = dynamodb.Table(os.environ['CLASS_ATTRIBUTES_TABLE'])
 
 def lambda_handler(event, context):
     try:

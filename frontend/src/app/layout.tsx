@@ -1,5 +1,6 @@
 import "./globals.css";
 import AuthProviderWrapper from "../components/AuthProviderWrapper";
+import ClientRouter from "../components/ClientRouter";
 import { Inter } from 'next/font/google';
 
 const inter = Inter({ 
@@ -21,7 +22,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className={`${inter.className} antialiased`}>
-        <AuthProviderWrapper>{children}</AuthProviderWrapper>
+        <AuthProviderWrapper>
+          <ClientRouter>{children}</ClientRouter>
+        </AuthProviderWrapper>
       </body>
     </html>
   );

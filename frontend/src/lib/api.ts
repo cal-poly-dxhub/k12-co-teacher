@@ -29,7 +29,9 @@ export interface ChatMessageItem {
 }
 
 export async function getClassesForDashboard(teacherEmail: string): Promise<ClassData[]> {
-  const response = await fetch('/api/classes', {
+  const API_ENDPOINT = process.env.NEXT_PUBLIC_CLASSES_API_ENDPOINT || 'https://6ll9oei3u3.execute-api.us-west-2.amazonaws.com/dev/getClassesForDashboard';
+  
+  const response = await fetch(API_ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -53,7 +55,9 @@ export async function getClassesForDashboard(teacherEmail: string): Promise<Clas
 }
 
 export async function getStudentsByClassId(classId: string): Promise<Record<string, string>> {
-  const response = await fetch('/api/students', {
+  const API_ENDPOINT = process.env.NEXT_PUBLIC_STUDENTS_API_ENDPOINT || 'https://6ll9oei3u3.execute-api.us-west-2.amazonaws.com/dev/getStudentsForClass';
+  
+  const response = await fetch(API_ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -77,7 +81,9 @@ export async function getStudentsByClassId(classId: string): Promise<Record<stri
 }
 
 export async function getStudentProfile(studentId: string): Promise<any> {
-  const response = await fetch('/api/student-profile', {
+  const API_ENDPOINT = process.env.NEXT_PUBLIC_STUDENT_PROFILE_API_ENDPOINT || 'https://6ll9oei3u3.execute-api.us-west-2.amazonaws.com/dev/getStudentProfile';
+  
+  const response = await fetch(API_ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -101,7 +107,9 @@ export async function getStudentProfile(studentId: string): Promise<any> {
 }
 
 export async function getChatHistory(teacherId: string, classId?: string): Promise<ChatHistoryItem[]> {
-  const response = await fetch('/api/chat-history', {
+  const API_ENDPOINT = process.env.NEXT_PUBLIC_CHAT_HISTORY_API_ENDPOINT || 'https://6ll9oei3u3.execute-api.us-west-2.amazonaws.com/dev/getChatHistory';
+  
+  const response = await fetch(API_ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -126,7 +134,9 @@ export async function getChatHistory(teacherId: string, classId?: string): Promi
 }
 
 export async function getChatMessages(teacherId: string, conversationId: string): Promise<ChatMessageItem[]> {
-  const response = await fetch('/api/chat-history', {
+  const API_ENDPOINT = process.env.NEXT_PUBLIC_CHAT_HISTORY_API_ENDPOINT || 'https://6ll9oei3u3.execute-api.us-west-2.amazonaws.com/dev/getChatHistory';
+  
+  const response = await fetch(API_ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

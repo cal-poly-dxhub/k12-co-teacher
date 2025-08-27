@@ -94,28 +94,28 @@ export class K12CoTeacherStack extends cdk.Stack {
 
     const studentProfilesTable = new dynamodb.Table(this, 'StudentProfilesTable', {
       tableName: 'k12-coteacher-student-profiles',
-      partitionKey: { name: 'studentId', type: dynamodb.AttributeType.STRING },
+      partitionKey: { name: 'studentID', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
     const classAttributesTable = new dynamodb.Table(this, 'ClassAttributesTable', {
       tableName: 'k12-coteacher-class-attributes',
-      partitionKey: { name: 'classId', type: dynamodb.AttributeType.STRING },
+      partitionKey: { name: 'classID', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
     const classToStudentsTable = new dynamodb.Table(this, 'ClassToStudentsTable', {
       tableName: 'k12-coteacher-class-to-students',
-      partitionKey: { name: 'classId', type: dynamodb.AttributeType.STRING },
+      partitionKey: { name: 'classID', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
     const teacherToClassesTable = new dynamodb.Table(this, 'TeacherToClassesTable', {
       tableName: 'k12-coteacher-teacher-to-classes',
-      partitionKey: { name: 'teacherId', type: dynamodb.AttributeType.STRING },
+      partitionKey: { name: 'teacherID', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
@@ -317,7 +317,7 @@ export class K12CoTeacherStack extends cdk.Stack {
         },
         {
           name: 'NEXT_PUBLIC_OIDC_AUTHORITY',
-          value: `https://cognito-idp.${this.region}.amazonaws.com/${userPool.userPoolId}`,
+          value: `https://${userPoolDomain.domainName}.auth.${this.region}.amazoncognito.com`,
         },
         {
           name: 'NEXT_PUBLIC_OIDC_CLIENT_ID',

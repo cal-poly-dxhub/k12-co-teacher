@@ -179,7 +179,7 @@ export class K12CoTeacherStack extends cdk.Stack {
 
     // Lambda Functions
     const getClassesLambda = new lambda.Function(this, 'GetClassesLambda', {
-      runtime: lambda.Runtime.PYTHON_3_11,
+      runtime: lambda.Runtime.PYTHON_3_13,
       handler: 'lambda_function.lambda_handler',
       code: lambda.Code.fromAsset('../lambdas/getClassesForDashboard'),
       role: lambdaRole,
@@ -191,7 +191,7 @@ export class K12CoTeacherStack extends cdk.Stack {
     });
 
     const getStudentsLambda = new lambda.Function(this, 'GetStudentsLambda', {
-      runtime: lambda.Runtime.PYTHON_3_11,
+      runtime: lambda.Runtime.PYTHON_3_13,
       handler: 'lambda_function.lambda_handler',
       code: lambda.Code.fromAsset('../lambdas/getStudentsForClass'),
       role: lambdaRole,
@@ -202,7 +202,7 @@ export class K12CoTeacherStack extends cdk.Stack {
     });
 
     const getStudentProfileLambda = new lambda.Function(this, 'GetStudentProfileLambda', {
-      runtime: lambda.Runtime.PYTHON_3_11,
+      runtime: lambda.Runtime.PYTHON_3_13,
       handler: 'lambda_function.lambda_handler',
       code: lambda.Code.fromAsset('../lambdas/getStudentProfile'),
       role: lambdaRole,
@@ -213,7 +213,7 @@ export class K12CoTeacherStack extends cdk.Stack {
     });
 
     const getChatHistoryLambda = new lambda.Function(this, 'GetChatHistoryLambda', {
-      runtime: lambda.Runtime.PYTHON_3_11,
+      runtime: lambda.Runtime.PYTHON_3_13,
       handler: 'lambda_function.lambda_handler',
       code: lambda.Code.fromAsset('../lambdas/getChatHistory'),
       role: lambdaRole,
@@ -224,7 +224,7 @@ export class K12CoTeacherStack extends cdk.Stack {
     });
 
     const editStudentProfileLambda = new lambda.Function(this, 'EditStudentProfileLambda', {
-      runtime: lambda.Runtime.PYTHON_3_11,
+      runtime: lambda.Runtime.PYTHON_3_13,
       handler: 'lambda_function.lambda_handler',
       code: lambda.Code.fromAsset('../lambdas/editStudentProfile'),
       role: lambdaRole,
@@ -234,8 +234,19 @@ export class K12CoTeacherStack extends cdk.Stack {
       },
     });
 
+    // REST API Gateway
+    const restApi = new apigateway.RestApi(this, 'K12CoTeacherRestApi', {
+      restApiName: 'K12 Co-Teacher REST API',
+      description: 'REST API for K-12 Co-Teacher application',
+      defaultCorsPreflightOptions: {
+        allowOrigins: apigateway.Cors.ALL_ORIGINS,
+        allowMethods: apigateway.Cors.ALL_METHODS,
+        allowHeaders: ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key'],
+      },
+    });
+
     const inferenceLambda = new lambda.Function(this, 'InferenceLambda', {
-      runtime: lambda.Runtime.PYTHON_3_11,
+      runtime: lambda.Runtime.PYTHON_3_13,
       handler: 'lambda_function.lambda_handler',
       code: lambda.Code.fromAsset('../lambdas/inference'),
       role: lambdaRole,
@@ -248,17 +259,6 @@ export class K12CoTeacherStack extends cdk.Stack {
         TEACHER_CLASSES_TABLE: teacherToClassesTable.tableName,
         STUDENT_PROFILE_API_ENDPOINT: `${restApi.url}getStudentProfile`,
         EDIT_STUDENT_PROFILE_API_ENDPOINT: `${restApi.url}editStudentProfile`,
-      },
-    });
-
-    // REST API Gateway
-    const restApi = new apigateway.RestApi(this, 'K12CoTeacherRestApi', {
-      restApiName: 'K12 Co-Teacher REST API',
-      description: 'REST API for K-12 Co-Teacher application',
-      defaultCorsPreflightOptions: {
-        allowOrigins: apigateway.Cors.ALL_ORIGINS,
-        allowMethods: apigateway.Cors.ALL_METHODS,
-        allowHeaders: ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key'],
       },
     });
 

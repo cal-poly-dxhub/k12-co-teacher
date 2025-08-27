@@ -1,6 +1,7 @@
 import json
 import boto3
 import uuid
+import os
 from conversation_history import *
 from student_utils import *
 from utils import *
@@ -82,7 +83,9 @@ def lambda_handler(event, context):
         studentProfiles = []
         for student in student_ids:
             try:
-                studentProfile = post_json("https://6ll9oei3u3.execute-api.us-west-2.amazonaws.com/dev/getStudentProfile", {"studentID": student})
+                # Use environment variable for API endpoint
+                api_endpoint = os.environ.get('STUDENT_PROFILE_API_ENDPOINT', 'https://6ll9oei3u3.execute-api.us-west-2.amazonaws.com/dev/getStudentProfile')
+                studentProfile = post_json(api_endpoint, {"studentID": student})
                 studentProfiles.append(studentProfile)
             except Exception as e:
                 print(f"Error fetching student profile for {student}: {e}")
@@ -212,7 +215,9 @@ def lambda_handler(event, context):
         
         if stop_reason == "tool_use" and tool_use.get('name') == 'editStudentProfile':
             try:
-                tool_result = post_json("https://6ll9oei3u3.execute-api.us-west-2.amazonaws.com/dev/editStudentProfile", 
+                # Use environment variable for API endpoint
+                api_endpoint = os.environ.get('EDIT_STUDENT_PROFILE_API_ENDPOINT', 'https://6ll9oei3u3.execute-api.us-west-2.amazonaws.com/dev/editStudentProfile')
+                tool_result = post_json(api_endpoint, 
                                 {"studentID": student_ids[0],
                                 "teacherID": teacher_id,
                                 "teacherComment": body})

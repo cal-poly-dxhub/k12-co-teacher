@@ -68,6 +68,20 @@ def get_chat_messages(user_id, conversation_id):
     items = response.get('Items', [])
     return items
 
+def get_conversation_title(user_id, conversation_id):
+    try:
+        response = table.get_item(
+            Key={
+                'TeacherId': user_id,
+                'sortId': f'CONV#{conversation_id}'
+            }
+        )
+        item = response.get('Item', {})
+        return item.get('title', '')
+    except Exception as e:
+        print(f"Error getting conversation title: {e}")
+        return ''
+
 def delete_conversation(user_id, conversation_id):
     # Get all message items related to the conversation
     message_items = get_chat_messages(user_id, conversation_id)

@@ -45,16 +45,21 @@ This CDK project deploys the complete AWS infrastructure for the K-12 Co-Teacher
    python add_to_dynamo.py
    ```
 
-2. **Update Frontend Environment**: Update the API URLs and Cognito config in your frontend `.env.local`:
-   ```
-   NEXT_PUBLIC_REST_API_URL=<REST_API_URL_FROM_OUTPUT>
-   NEXT_PUBLIC_WS_URL=<WEBSOCKET_URL_FROM_OUTPUT>
-   NEXT_PUBLIC_COGNITO_USER_POOL_ID=<USER_POOL_ID_FROM_OUTPUT>
-   NEXT_PUBLIC_COGNITO_CLIENT_ID=<USER_POOL_CLIENT_ID_FROM_OUTPUT>
-   NEXT_PUBLIC_COGNITO_DOMAIN=<USER_POOL_DOMAIN_FROM_OUTPUT>
-   ```
+2. **Environment Variables**: All environment variables are automatically configured in Amplify:
+   - `NEXT_PUBLIC_WS_URL` - WebSocket API endpoint
+   - `NEXT_PUBLIC_COGNITO_USER_POOL_ID` - Cognito User Pool ID
+   - `NEXT_PUBLIC_COGNITO_CLIENT_ID` - Cognito Client ID
+   - `NEXT_PUBLIC_COGNITO_DOMAIN` - Cognito Domain
+   - `CLASSES_API_ENDPOINT` - Classes API endpoint
+   - `STUDENTS_API_ENDPOINT` - Students API endpoint
+   - `STUDENT_PROFILE_API_ENDPOINT` - Student Profile API endpoint
+   - `NEXT_PUBLIC_CHAT_HISTORY_API` - Chat History API endpoint
 
-3. **Update Callback URLs**: After deploying your frontend to production, update the Cognito callback URLs in the CDK stack and redeploy.
+3. **Deploy Frontend**: Connect your GitHub repository to the Amplify app:
+   - Go to AWS Amplify Console
+   - Find your app using the App ID from CDK output
+   - Connect your GitHub repository
+   - Amplify will automatically build and deploy your Next.js app
 
 ## Cleanup
 
@@ -71,6 +76,11 @@ cdk destroy
 - `k12-coteacher-class-attributes` - Class metadata
 - `k12-coteacher-class-to-students` - Class roster mappings
 - `k12-coteacher-teacher-to-classes` - Teacher class assignments
+
+### Frontend Hosting
+- `AWS Amplify App` - Managed hosting for Next.js application
+- `Environment Variables` - Automatically configured API endpoints
+- `CI/CD` - Git-based deployments with build automation
 
 ### Authentication
 - `Cognito User Pool` - Teacher authentication and user management

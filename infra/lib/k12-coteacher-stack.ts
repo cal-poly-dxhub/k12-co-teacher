@@ -6,6 +6,7 @@ import * as integrations from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
+import * as amplify from 'aws-cdk-lib/aws-amplify';
 import { Construct } from 'constructs';
 
 export class K12CoTeacherStack extends cdk.Stack {
@@ -63,14 +64,12 @@ export class K12CoTeacherStack extends cdk.Stack {
         callbackUrls: [
           'http://localhost:3000',
           'https://localhost:3000',
-          // Add your production domain here when deployed
-          // 'https://yourdomain.com',
+          // Amplify domain will be added after deployment
         ],
         logoutUrls: [
           'http://localhost:3000/login',
           'https://localhost:3000/login',
-          // Add your production domain here when deployed
-          // 'https://yourdomain.com/login',
+          // Amplify domain will be added after deployment
         ],
       },
       supportedIdentityProviders: [cognito.UserPoolClientIdentityProvider.COGNITO],
@@ -247,6 +246,8 @@ export class K12CoTeacherStack extends cdk.Stack {
         CLASS_ATTRIBUTES_TABLE: classAttributesTable.tableName,
         CLASS_STUDENTS_TABLE: classToStudentsTable.tableName,
         TEACHER_CLASSES_TABLE: teacherToClassesTable.tableName,
+        STUDENT_PROFILE_API_ENDPOINT: `${restApi.url}getStudentProfile`,
+        EDIT_STUDENT_PROFILE_API_ENDPOINT: `${restApi.url}editStudentProfile`,
       },
     });
 
@@ -304,6 +305,47 @@ export class K12CoTeacherStack extends cdk.Stack {
       integration: lambdaIntegration,
     });
 
+    // AWS Amplify App
+    const amplifyApp = new amplify.CfnApp(this, 'K12CoTeacherAmplifyApp', {
+      name: 'k12-coteacher-app',
+      description: 'K-12 Co-Teacher Next.js Application',
+      platform: 'WEB_COMPUTE',
+      environmentVariables: [
+        {
+          name: 'NEXT_PUBLIC_WS_URL',
+          value: webSocketStage.url,
+        },
+        {
+          name: 'NEXT_PUBLIC_COGNITO_USER_POOL_ID',
+          value: userPool.userPoolId,
+        },
+        {
+          name: 'NEXT_PUBLIC_COGNITO_CLIENT_ID',
+          value: userPoolClient.userPoolClientId,
+        },
+        {
+          name: 'NEXT_PUBLIC_COGNITO_DOMAIN',
+          value: userPoolDomain.domainName,
+        },
+        {
+          name: 'CLASSES_API_ENDPOINT',
+          value: `${restApi.url}getClassesForDashboard`,
+        },
+        {
+          name: 'STUDENTS_API_ENDPOINT',
+          value: `${restApi.url}getStudentsForClass`,
+        },
+        {
+          name: 'STUDENT_PROFILE_API_ENDPOINT',
+          value: `${restApi.url}getStudentProfile`,
+        },
+        {
+          name: 'NEXT_PUBLIC_CHAT_HISTORY_API',
+          value: `${restApi.url}getHistory`,
+        },
+      ],
+    });
+
     // Outputs
     new cdk.CfnOutput(this, 'UserPoolId', {
       value: userPool.userPoolId,
@@ -323,6 +365,16 @@ export class K12CoTeacherStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'CognitoAuthUrl', {
       value: `https://${userPoolDomain.domainName}.auth.${this.region}.amazoncognito.com`,
       description: 'Cognito Authentication URL',
+    });
+
+    new cdk.CfnOutput(this, 'AmplifyAppId', {
+      value: amplifyApp.attrAppId,
+      description: 'Amplify App ID',
+    });
+
+    new cdk.CfnOutput(this, 'AmplifyAppName', {
+      value: amplifyApp.name!,
+      description: 'Amplify App Name',
     });
     new cdk.CfnOutput(this, 'RestApiUrl', {
       value: restApi.url,

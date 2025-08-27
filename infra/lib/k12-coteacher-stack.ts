@@ -316,31 +316,31 @@ export class K12CoTeacherStack extends cdk.Stack {
           value: webSocketStage.url,
         },
         {
-          name: 'NEXT_PUBLIC_COGNITO_USER_POOL_ID',
-          value: userPool.userPoolId,
+          name: 'NEXT_PUBLIC_OIDC_AUTHORITY',
+          value: `https://cognito-idp.${this.region}.amazonaws.com/${userPool.userPoolId}`,
         },
         {
-          name: 'NEXT_PUBLIC_COGNITO_CLIENT_ID',
+          name: 'NEXT_PUBLIC_OIDC_CLIENT_ID',
           value: userPoolClient.userPoolClientId,
         },
         {
-          name: 'NEXT_PUBLIC_COGNITO_DOMAIN',
-          value: userPoolDomain.domainName,
+          name: 'NEXT_PUBLIC_OIDC_REDIRECT_URI',
+          value: 'https://localhost:3000', // This will be updated after Amplify deployment
         },
         {
-          name: 'CLASSES_API_ENDPOINT',
+          name: 'NEXT_PUBLIC_CLASSES_API_ENDPOINT',
           value: `${restApi.url}getClassesForDashboard`,
         },
         {
-          name: 'STUDENTS_API_ENDPOINT',
+          name: 'NEXT_PUBLIC_STUDENTS_API_ENDPOINT',
           value: `${restApi.url}getStudentsForClass`,
         },
         {
-          name: 'STUDENT_PROFILE_API_ENDPOINT',
+          name: 'NEXT_PUBLIC_STUDENT_PROFILE_API_ENDPOINT',
           value: `${restApi.url}getStudentProfile`,
         },
         {
-          name: 'NEXT_PUBLIC_CHAT_HISTORY_API',
+          name: 'NEXT_PUBLIC_CHAT_HISTORY_API_ENDPOINT',
           value: `${restApi.url}getHistory`,
         },
       ],

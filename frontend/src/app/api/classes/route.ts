@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_ENDPOINT = process.env.CLASSES_API_ENDPOINT || 'https://6ll9oei3u3.execute-api.us-west-2.amazonaws.com/dev/getClassesForDashboard';
+const API_ENDPOINT = process.env.NEXT_PUBLIC_CLASSES_API_ENDPOINT || 'https://your-api-id.execute-api.your-region.amazonaws.com/dev/getClassesForDashboard';
 
 export async function POST(request: NextRequest) {
   try {

@@ -1,24 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# K12 Co-Teacher Frontend
+
+This is a [Next.js](https://nextjs.org) project for the K12 Co-Teacher application, providing an AI-powered classroom assistant interface.
+
+## Configuration
+
+### Environment Variables
+
+The application uses dynamic configuration from AWS CDK outputs. **Do not hardcode any AWS resource IDs or URLs.**
+
+#### For Development
+
+1. **Deploy the CDK stack first** (see `/infra` directory)
+2. **Generate environment variables** from CDK outputs:
+   ```bash
+   # From the project root
+   ./scripts/generate-env.sh [stack-name]
+   ```
+3. **Or manually create** `.env.local` using the template:
+   ```bash
+   cp .env.local.template .env.local
+   # Then update with actual CDK output values
+   ```
+
+#### Required Environment Variables
+
+- `NEXT_PUBLIC_OIDC_AUTHORITY` - Cognito User Pool authority URL
+- `NEXT_PUBLIC_OIDC_CLIENT_ID` - Cognito User Pool Client ID
+- `NEXT_PUBLIC_OIDC_REDIRECT_URI` - OAuth redirect URI
+- `NEXT_PUBLIC_WS_URL` - WebSocket API Gateway URL
+- `NEXT_PUBLIC_CLASSES_API_ENDPOINT` - Classes API endpoint
+- `NEXT_PUBLIC_STUDENTS_API_ENDPOINT` - Students API endpoint
+- `NEXT_PUBLIC_STUDENT_PROFILE_API_ENDPOINT` - Student profile API endpoint
+- `NEXT_PUBLIC_CHAT_HISTORY_API_ENDPOINT` - Chat history API endpoint
+- `NEXT_PUBLIC_INFERENCE_API_ENDPOINT` - Inference API endpoint
 
 ## Getting Started
 
-First, run the development server:
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+2. **Configure environment variables** (see Configuration section above)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+4. **Open [http://localhost:3000](http://localhost:3000)** with your browser
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Architecture
+
+The frontend integrates with:
+- **Amazon Cognito** for authentication (via react-oidc-context)
+- **API Gateway REST APIs** for data operations
+- **API Gateway WebSocket** for real-time chat
+- **AWS Amplify** for hosting (in production)
 
 ## Learn More
 

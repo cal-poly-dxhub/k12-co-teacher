@@ -52,7 +52,7 @@ export default function ChatPage() {
   const classId = params.classId as string;
 
   const { isConnected, connect, disconnect, sendMessage } = useWebSocket({
-    url: process.env.NEXT_PUBLIC_WS_URL || 'wss://zr2han1x4j.execute-api.us-west-2.amazonaws.com/dev',
+    url: process.env.NEXT_PUBLIC_WS_URL || 'wss://your-websocket-id.execute-api.your-region.amazonaws.com/dev',
     // Replace the onMessage handler in your useWebSocket call with this:
     onMessage: (data: any) => {
       if (data.message) {
